@@ -20,7 +20,8 @@ public sealed class MeasurementSigner
     {
         var operationId = Guid.NewGuid().ToString("D");
         var weight = snapshot.WeightKg.ToString("F3", CultureInfo.InvariantCulture);
-        var measuredAt = snapshot.MeasuredAt.ToString("O", CultureInfo.InvariantCulture);
+        var measuredAtMs = snapshot.MeasuredAt.ToUnixTimeMilliseconds()
+            .ToString(CultureInfo.InvariantCulture);
 
         var payload = string.Join(
             '|',
@@ -30,7 +31,7 @@ public sealed class MeasurementSigner
             snapshot.Terminal,
             weight,
             snapshot.Stable ? "1" : "0",
-            measuredAt,
+            measuredAtMs,
             snapshot.Sequence.ToString(CultureInfo.InvariantCulture));
 
         using var hmac = new HMACSHA256(_key);
