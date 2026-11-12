@@ -1,4 +1,5 @@
 using WeighingStationAgent.Api;
+using WeighingStationAgent.Cameras;
 using WeighingStationAgent.Configuration;
 using WeighingStationAgent.Storage;
 using WeighingStationAgent.Terminals;
@@ -28,6 +29,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddSingleton<TerminalProvider>();
+builder.Services.AddSingleton<CameraProvider>();
 builder.Services.AddSingleton<WeightBroadcaster>();
 builder.Services.AddSingleton<MeasurementSigner>();
 builder.Services.AddSingleton<OutboxStore>();

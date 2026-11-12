@@ -23,11 +23,11 @@ public sealed class AgentOptions
     public string OutboxPath { get; set; } = "data/outbox";
 
     public TerminalOptions Terminal { get; set; } = new();
+    public CameraOptions Camera { get; set; } = new();
 }
 
 public sealed class TerminalOptions
-{
-    /// <summary>Emulator | ModbusTcp | SerialAscii.</summary>
+{    /// <summary>Emulator | ModbusTcp | SerialAscii.</summary>
     public string Type { get; set; } = "Emulator";
 
     public string Host { get; set; } = "127.0.0.1";
@@ -49,4 +49,13 @@ public sealed class TerminalOptions
     public string ZeroCommand { get; set; } = "Z\r";
     public string LineRegex { get; set; } = @"([-+]?\d+(?:[.,]\d+)?)";
     public double Scale { get; set; } = 1;
+}
+
+public sealed class CameraOptions
+{
+    /// <summary>Emulator (позже: Rtsp / Hikvision).</summary>
+    public string Type { get; set; } = "Emulator";
+    public int Width { get; set; } = 1280;
+    public int Height { get; set; } = 720;
+    public string SavePath { get; set; } = "data/photos";
 }

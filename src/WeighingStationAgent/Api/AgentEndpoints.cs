@@ -1,5 +1,6 @@
 using System.Net.WebSockets;
 using Microsoft.Extensions.Options;
+using WeighingStationAgent.Cameras;
 using WeighingStationAgent.Configuration;
 using WeighingStationAgent.Storage;
 using WeighingStationAgent.Terminals;
@@ -63,8 +64,7 @@ public static class AgentEndpoints
             OutboxStore outbox,
             IOptions<AgentOptions> options,
             CancellationToken cancellationToken) =>
-        {
-            if (!IsAuthorized(context, options.Value))
+        {            if (!IsAuthorized(context, options.Value))
             {
                 return Unauthorized();
             }
@@ -87,6 +87,49 @@ public static class AgentEndpoints
             var file = await outbox.EnqueueAsync(measurement, cancellationToken);
 
             return Results.Ok(new { file, measurement });
+        });
+
+        app.MapPost("/api/cameras/{id}/capture", async (
+            string id,
+            HttpContext context,
+            CameraProvider cameras,
+            WeightMonitor monitor,
+            IOptions<AgentOptions> options,
+            CancellationToken cancellationToken) =>
+        {
+            if (!IsAuthorized(context, options.Value))
+            {
+                return Unauthorized();
+            }
+
+            if (!string.Equals(options.Value.Camera.Type, "Emulator", StringComparison.OrdinalIgnoreCase))
+            {
+                return Results.Json(
+                    new { error = "Драйвер камеры пока не реализован" },
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            try
+            {
+                var frame = await cameras.CaptureAsync(
+                    id,
+                    monitor.Current?.WeightKg ?? 0,
+                    options.Value.StationName,
+                    cancellationToken);
+
+                return Results.Ok(new
+                {
+                    cameraId = id,
+                    fileName = frame.FileName,
+                    contentType = frame.ContentType,
+                    capturedAt = frame.CapturedAt,
+                    base64 = Convert.ToBase64String(frame.Bytes),
+                });
+            }
+            catch (InvalidOperationException exception)
+            {
+                return Results.NotFound(new { error = exception.Message });
+            }
         });
 
         app.MapPost("/api/terminal/zero", async (
